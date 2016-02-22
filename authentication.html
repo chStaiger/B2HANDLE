@@ -1,0 +1,696 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Authentication at a Handle Server &mdash; B2Handle 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="B2Handle 1.0 documentation" href="index.html"/>
+        <link rel="next" title="Handle Server Configuration" href="handleserverconfig.html"/>
+        <link rel="prev" title="Handle Client documentation" href="handleclient.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> B2Handle
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="handleclient.html">Handle Client documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Authentication at a Handle Server</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-username-and-password">Using username and password</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-client-certificates">Using client certificates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-client-certificate">Creating the client certificate</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#giving-admin-permissions-to-users">Giving admin permissions to users</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-problems">Common problems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#http-403">HTTP 403</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#handshake-failure">Handshake Failure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#http-401">HTTP 401</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ssl-error">SSL Error</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="handleserverconfig.html">Handle Server Configuration</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">B2Handle</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Authentication at a Handle Server</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/authentication.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="authentication-at-a-handle-server">
+<h1>Authentication at a Handle Server<a class="headerlink" href="#authentication-at-a-handle-server" title="Permalink to this headline">¶</a></h1>
+<p>Below, we describe the two methods to authenticate at a Handle Server for write access.
+In both methods, the library user has a username of this form: <strong>index:prefix/suffix</strong>.</p>
+<p>It does not only look like a handle, it is a handle - it points to an entry in a handle
+where the information needed to verify the user&#8217;s identity are stored.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">The user, identified by his username, needs to be granted write permissions
+by the handle server admin. For this, please see below.</p>
+</div>
+<div class="section" id="using-username-and-password">
+<h2>Using username and password<a class="headerlink" href="#using-username-and-password" title="Permalink to this headline">¶</a></h2>
+<p>Authenticating via username and password means that the password has to be stored as a <code class="docutils literal"><span class="pre">HS_SECKEY</span></code> entry in the record of a handle (this entry is, of course, hidden and not visible to the public!). This handle, together with the index of the <code class="docutils literal"><span class="pre">HS_SECKEY</span></code> entry, is the username.</p>
+<p>For example, in the handle record of handle &#8216;foo/bar&#8217;, there is a <code class="docutils literal"><span class="pre">HS_SECKEY</span></code> entry with the value &#8216;mypassword&#8217; at index 300. Then, the username is <strong>300:foo/bar</strong> and the password is &#8216;mypassword&#8217;:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="38%" />
+<col width="42%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>300</td>
+<td>HS_SECKEY</td>
+<td>mypassword</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>The handle server admin has to add the <code class="docutils literal"><span class="pre">HS_SECKEY</span></code> entry with the user&#8217;s password to an existing handle (e.g. &#8216;&lt;prefix&gt;/allusers&#8217;) or create a new handle for this purpose (e.g. &#8216;&lt;prefix&gt;/johndoe&#8217;. He or she also has to grant write permissions to the user (see below).</p>
+</div>
+<div class="section" id="using-client-certificates">
+<h2>Using client certificates<a class="headerlink" href="#using-client-certificates" title="Permalink to this headline">¶</a></h2>
+<p>Authenticating via client certificate means that the user&#8217;s public key has to be stored as a <code class="docutils literal"><span class="pre">HS_PUBKEY</span></code> entry in the record of a handle. This handle, together with the index of the <code class="docutils literal"><span class="pre">HS_PUBKEY</span></code> entry, is the username.</p>
+<p>For example, in the handle record of handle &#8216;foo/bar&#8217;,there is a <code class="docutils literal"><span class="pre">HS_PUBKEY</span></code> entry with the user&#8217;s public key (in a hex format) at index 301. Then, the username is &#8216;301:foo/bar&#8217;. Instead of a password, the user then needs to authenticate using his private key and a certificate containing this username.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="32%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>301</td>
+<td>HS_PUBKEY</td>
+<td>0000A552100...</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>The handle server admin has to add the <code class="docutils literal"><span class="pre">HS_PUBKEY</span></code> entry with the user&#8217;s public key to an existing handle or create a new handle for this purpose.  He or she also has to grant write permissions to the user (see below).</p>
+<p>For creating the certificate, the following steps may be required:</p>
+<div class="section" id="creating-the-client-certificate">
+<h3>Creating the client certificate<a class="headerlink" href="#creating-the-client-certificate" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Creating a private/public key pair:</li>
+</ol>
+<blockquote>
+<div><ul>
+<li><p class="first">For this, you can use the command line tool &#8220;hdl-keygen&#8221; that is shipped together with the handle system software:</p>
+<div class="code json highlight-python"><div class="highlight"><pre><span></span>bash /.../handlesystem_software/hsj-8.x.x/bin/hdl-keygen
+              -alg dsa
+              -keysize 2048
+               301_foo_bar_privkey.bin 301_foo_bar_pubkey.bin
+</pre></div>
+</div>
+<p>Note: We put 301_foo_bar into the name to remember for which username this keypair is generated!</p>
+</li>
+<li><p class="first">When it asks whether you want to encrypt the key, type &#8216;n&#8217;:</p>
+<blockquote>
+<div><div class="code json highlight-python"><div class="highlight"><pre><span></span>Would you like to encrypt your private key? (y/n) [y] n
+</pre></div>
+</div>
+</div></blockquote>
+<p>Why? The b2handle library uses the python library <em>requests</em> which does not support encrypted private keys:
+<em>&#8220;The private key to your local certificate must be unencrypted. Currently, requests does not support
+using encrypted keys.&#8221;</em> (see <a class="reference external" href="http://docs.python-requests.org/en/latest/user/advanced/#ssl-cert-verification">requests documentation on this topic</a>).</p>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Upload the user&#8217;s public key to the <code class="docutils literal"><span class="pre">HS_PUBKEY</span></code> entry:</li>
+</ol>
+<blockquote>
+<div><ul>
+<li><p class="first">For this, you can use the command line tool &#8220;hdl-admintool&#8221; that is shipped together with the handle system software:</p>
+<blockquote>
+<div><div class="code json highlight-python"><div class="highlight"><pre><span></span>bash /.../handlesystem_software/hsj-8.x.x/bin/hdl-admintool
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Authenticate with your handle-server-admin credentials</p>
+</li>
+<li><p class="first">Lookup the handle where you want to store the user&#8217;s public key (foo/bar)</p>
+</li>
+<li><p class="first">&#8220;Edit&#8221;</p>
+</li>
+<li><p class="first">&#8220;Add&#8221; &gt; &#8220;Blank Value&#8221;</p>
+</li>
+<li><p class="first">Index: In this example, we use 301. As a convention, take the lowest value &gt;= 301 that is not in use yet.</p>
+</li>
+<li><p class="first">&#8220;Load from file&#8221; &gt; Choose the file &#8220;301_foo_bar_pubkey.bin&#8221;</p>
+</li>
+<li><p class="first">The value type should have set itself to <em>&#8220;Hex&#8221;</em> now.</p>
+</li>
+<li><p class="first">Don&#8217;t forget to give admin permissions to the username 301:foo/bar, where you just uploaded the public key!</p>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>Transforming the binary private key (.bin) to a .pem file:</li>
+</ol>
+<blockquote>
+<div><ul>
+<li><p class="first">For this, you can use the command line tool &#8220;hdl-convert-key&#8221; that is shipped together with the handle system software:</p>
+<blockquote>
+<div><div class="code json highlight-python"><div class="highlight"><pre><span></span>bash /.../handlesystem_software/hsj-8.x.x/bin/hdl-convert-key
+                                    /.../301_foo_bar_privkey.bin
+                                 -o /.../301_foo_bar_privkey.pem
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Creating the certificate file:</li>
+</ol>
+<blockquote>
+<div><ul>
+<li><p class="first">This can be done using openssl:</p>
+<blockquote>
+<div><div class="code json highlight-python"><div class="highlight"><pre><span></span>openssl req -pubkey -x509 -new  -key /.../301_foo_bar_privkey.pem
+                                -out /.../301_certificate_and_publickey.pem
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">The tool is then going to prompt for some information. For the first 5 prompts, it does not matter what you enter- the entries are going to be ignored by the Handle Server.
+However, it is very important to enter the username as Common Name and <em>leave the Email address blank</em>, as it is going to be appended to the username otherwise. This will look like
+this:</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>   You are about to be asked to enter information that will be incorporated
+   into your certificate request.
+   What you are about to enter is what is called a Distinguished Name or a DN.
+   There are quite a few fields but you can leave some blank
+   For some fields there will be a default value,
+   If you enter &#39;.&#39;, the field will be left blank.
+   -----
+   Country Name (2 letter code) [XX]:
+   State or Province Name (full name) []:
+   Locality Name (eg, city) [Default City]:
+   Organization Name (eg, company) [Default Company Ltd]:
+   Organizational Unit Name (eg, section) []:
+<span class="hll">   Common Name (eg, your name or your server&#39;s hostname) []:300:foo/bar
+</span><span class="hll">   Email Address []:
+</span></pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<ol class="arabic" start="5">
+<li><p class="first">Optional: Removing the public key from the certificate file:</p>
+<blockquote>
+<div><div class="code json highlight-python"><div class="highlight"><pre><span></span>openssl x509 -inform PEM -in /.../301_certificate_and_publickey.pem
+                         -out /.../301_certificate_only.pem
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<p>Now, the certificate_only.pem file and the private_key.pem file can be used for authentication.
+The paths to these files should be entered into the JSON credentials file asfollows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;handle_server_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://my.handle.server&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;private_key&quot;</span><span class="p">:</span> <span class="s2">&quot;301_foo_bar_privkey.pem&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;certificate_only&quot;</span><span class="p">:</span> <span class="s2">&quot;301_certificate_only.pem&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Please follow the client documentation to see how a user can use this JSON file to authenticate while using the b2handle library.</p>
+</div>
+</div>
+<div class="section" id="giving-admin-permissions-to-users">
+<h2>Giving admin permissions to users<a class="headerlink" href="#giving-admin-permissions-to-users" title="Permalink to this headline">¶</a></h2>
+<p>No matter which of the methods is used, in both cases the Handle Server admin (or prefix owner) has to give write permissions to
+the user. The admin can do that in several ways. Note that while the third method looks most complex, it may be the easiest one,
+as it is most easily modified and extended (without having to contact the prefix provider to changes in the <strong>0.NA/foo</strong> record).</p>
+<p>These are three ways to grant admin permissions to users <strong>300:foo/bar</strong> and <strong>301:foo/bar</strong>:</p>
+<ol class="arabic">
+<li><p class="first">By creating a <code class="docutils literal"><span class="pre">HS_ADMIN</span></code> entry for each username in the prefix owner handle record (i.e. somewhere in the record <strong>0.NA/foo</strong>).</p>
+<p><strong>Handle record 0.NA/foo:</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="24%" />
+<col width="62%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>100</td>
+<td>HS_ADMIN</td>
+<td>(refers to 300:foo/bar)</td>
+</tr>
+<tr class="row-even"><td>101</td>
+<td>HS_ADMIN</td>
+<td>(refers to 301:foo/bar)</td>
+</tr>
+<tr class="row-odd"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Handle record foo/bar:</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="35%" />
+<col width="46%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>300</td>
+<td>HS_SECKEY</td>
+<td><em>mypassword</em></td>
+</tr>
+<tr class="row-even"><td>301</td>
+<td>HS_PUBKEY</td>
+<td>0000A552100</td>
+</tr>
+<tr class="row-odd"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">By adding the usernames (<strong>300:foo/bar</strong> and <strong>301:foo/bar</strong>) to a <code class="docutils literal"><span class="pre">HS_VLIST</span></code> entry in the prefix owner handle record
+(i.e. somewhere in the record <strong>0.NA/foo</strong>), which was referenced in a <code class="docutils literal"><span class="pre">HS_ADMIN</span></code> entry in <strong>0.NA/foo</strong>.</p>
+<blockquote>
+<div><p><strong>Handle record 0.NA/foo:</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="24%" />
+<col width="63%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>100</td>
+<td>HS_ADMIN</td>
+<td>(refers to 200:0.NA/foo)</td>
+</tr>
+<tr class="row-even"><td>200</td>
+<td>HS_VLIST</td>
+<td>300:foo/bar
+301:foo/bar</td>
+</tr>
+<tr class="row-odd"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Handle record foo/bar:</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="35%" />
+<col width="46%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>300</td>
+<td>HS_SECKEY</td>
+<td><em>mypassword</em></td>
+</tr>
+<tr class="row-even"><td>301</td>
+<td>HS_PUBKEY</td>
+<td>0000A552100</td>
+</tr>
+<tr class="row-odd"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p class="first">By adding the usernames (<strong>300:foo/bar</strong> and <strong>301:foo/bar</strong>) to any <code class="docutils literal"><span class="pre">HS_VLIST</span></code> entry referenced somewhere in <strong>0.NA/foo</strong>.
+For example, if there is a <code class="docutils literal"><span class="pre">HS_ADMIN</span></code> at index 101 of <strong>0.NA/foo</strong> which points to a <code class="docutils literal"><span class="pre">HS_VLIST</span></code> at the index 200 in
+<strong>0.NA/foo</strong>, which points to a <code class="docutils literal"><span class="pre">HS_VLIST</span></code> at index 200 in &#8216;foo/admin&#8217;, which points to a <code class="docutils literal"><span class="pre">HS_SECKEY</span></code> at index 300 in &#8216;foo/bar&#8217; - then <strong>300:foo/bar</strong> is a username with all the permissions stated in the <code class="docutils literal"><span class="pre">HS_ADMIN</span></code> entry at the index 101 of <strong>0.NA/foo</strong>.</p>
+<blockquote>
+<div><p><strong>Handle record 0.NA/foo:</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="24%" />
+<col width="63%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>100</td>
+<td>HS_ADMIN</td>
+<td>(refers to 200:0.NA/foo)</td>
+</tr>
+<tr class="row-even"><td>200</td>
+<td>HS_VLIST</td>
+<td>200:foo/bar</td>
+</tr>
+<tr class="row-odd"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Handle record foo/bar:</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="24%" />
+<col width="62%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Index</td>
+<td>Key</td>
+<td>Value</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="row-odd"><td>200</td>
+<td>HS_VLIST</td>
+<td>300:foo/bar
+301:foo/bar</td>
+</tr>
+<tr class="row-even"><td>300</td>
+<td>HS_SECKEY</td>
+<td><em>mypassword</em></td>
+</tr>
+<tr class="row-odd"><td>301</td>
+<td>HS_PUBKEY</td>
+<td>0000A552100</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="common-problems">
+<h2>Common problems<a class="headerlink" href="#common-problems" title="Permalink to this headline">¶</a></h2>
+<p>Some common problems when authenticating, together with possible solutions. Please note that the provided problem
+causes are causes we observed. Of course it is possible that other reasons may cause the same problems, in that case
+these solutions may not work.</p>
+<div class="section" id="http-403">
+<h3>HTTP 403<a class="headerlink" href="#http-403" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><strong>Problem:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>The handle server returns a JSON object that looks like this: <code class="docutils literal"><span class="pre">{&quot;responseCode&quot;:400,&quot;handle&quot;:&quot;myprefix/123456&quot;}</span></code></li>
+<li>Handle Server responseCode: 400 (<em>Other authentication errors</em>)</li>
+<li>HTTP status code 403 (<em>Forbidden</em>).</li>
+</ul>
+</div></blockquote>
+<p><strong>Possible solution:</strong></p>
+<blockquote>
+<div>This error occurs if the username does not have admin permissions yet. Make sure it is referred to in a
+HS_ADMIN or HS_VLIST that has admin permissions.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="handshake-failure">
+<h3>Handshake Failure<a class="headerlink" href="#handshake-failure" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><strong>Problem:</strong></p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">SSL</span> <span class="pre">routines:SSL3_READ_BYTES:ssl</span> <span class="pre">handshake</span> <span class="pre">failure</span></code></div></blockquote>
+<p><strong>Possible Solution:</strong></p>
+<blockquote>
+<div>Sometimes, this error occurs if the private key was encrypted. Please try with an unencrypted private key.
+This can occur with unencrypted keys, too. We have no proposed solution for that.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="http-401">
+<h3>HTTP 401<a class="headerlink" href="#http-401" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><strong>Problem:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>HTTP status code 401 (<em>Unauthorized</em>)</li>
+<li>HS response code 402 (<em>Authentication needed</em>)</li>
+<li>The handle server returns a JSON object that looks like this: <code class="docutils literal"><span class="pre">{&quot;responseCode&quot;:402,&quot;handle&quot;:&quot;myprefix/123456&quot;}</span></code></li>
+</ul>
+</div></blockquote>
+<p><strong>Possible Solution:</strong></p>
+<blockquote>
+<div>This error occurs if the client certificate was not correctly passed to the handle server. Possibly the server
+forwards the request internally to a different port and loses the certificate information on the way (e.g. using httpd ProxyPass).
+Please ask your handle server administrator about this. Testing the same request directly on the port of the handle server (if
+that is open for external access) can help finding out whether this is the problem.</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="ssl-error">
+<h3>SSL Error<a class="headerlink" href="#ssl-error" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><strong>Problem:</strong></p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">requests.exceptions.SSLError:</span> <span class="pre">[SSL]</span> <span class="pre">PEM</span> <span class="pre">lib</span> <span class="pre">(_ssl.c:2525)</span></code></div></blockquote>
+<p><strong>Possible Solution:</strong></p>
+<blockquote>
+<div>This error occurs if the private key was not provided, for example if a single file instead of two was provided,
+but the private key was not contained. FOr this reason, we only recommend and describe passing certificate and
+private key in two separate files.</div></blockquote>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="handleserverconfig.html" class="btn btn-neutral float-right" title="Handle Server Configuration" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="handleclient.html" class="btn btn-neutral" title="Handle Client documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015-2016, Deutsches Klimarechenzentrum GmbH, GRNET S.A., SURFsara.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
